@@ -10,12 +10,30 @@ entity RISCV_DecExe is
     ADDR_WIDTH : integer := 17;      -- ancho de la dirección de la MEMORIA (índice de palabra)
     NUM_BYTES  : integer := 4        -- bytes por palabra (32b ? 4)
   );
+<<<<<<< Updated upstream
   port(
 	clk      : in  std_logic;
 	rst      : in  std_logic;
    	-- Salidas al resto del core / trazas
 	IR       : in std_logic_vector(31 downto 0)            -- Instruction Register
 
+=======
+  Port (
+    clk : in std_logic; -- clk y rst se mantienen para el Regfile
+    rst : in std_logic;
+    
+    IR : in std_logic_vector (31 downto 0);
+    -- Data interface (para conectar con puerto B de la memoria)
+    data_addr : out std_logic_vector(ADDR_WIDTH-1 downto 0);
+    data_wdata : out std_logic_vector(31 downto 0);
+    data_rdata : in  std_logic_vector(31 downto 0);
+    data_we : out std_logic;
+    data_be : out std_logic_vector(3 downto 0);
+    imm_PC: out std_logic_vector(31 downto 0)
+    --pc_jump_o : out std_logic;
+    --pc_jump_addr_o : out std_logic_vector(31 downto 0);
+    -- ... etc
+>>>>>>> Stashed changes
   );
 end RISCV_DecExe;
 

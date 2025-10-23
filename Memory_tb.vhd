@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Company: 
+-- Company: JAavibi
 -- Engineer: 
 -- 
 -- Create Date: 25.09.2025 19:09:38
@@ -13,7 +13,7 @@
 -- Dependencies: 
 -- 
 -- Revision:
--- Revision 0.01 - File Created
+-- Revision 0.01 - File Created 
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------

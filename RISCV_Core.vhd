@@ -54,33 +54,36 @@ end RISCV_Core;
 
 architecture Behavioral of RISCV_Core is
 
-  -- Señales internas
-signal ir        : std_logic_vector(31 downto 0);
+signal ir : std_logic_vector(31 downto 0);
 signal ir_valid  : std_logic;
-
--- Puedes usar esto para stalls más adelante; por ahora siempre '1'
-signal fetch_en  : std_logic := '1';
+signal fetch_en  : std_logic := '1';-- por ahora siempre '1'
+signal PC : std_logic_vector(ADDR_WIDTH+1 downto 0);
 
 component RISCV_Fetch is
-generic(
-    ADDR_WIDTH   : integer := 17
-  );
-  Port (
-    clk: in std_logic;
-    rst: in std_logic;
-    
-    -- Interfaz a memoria de instrucciones (puerto A)
-    instr_addr  : out std_logic_vector(ADDR_WIDTH-1 downto 0);--dirección a memoria = PC
-    instr_rdata : in  std_logic_vector(31 downto 0); --salida del puerto A de la memoria
-    
-    fetch_en : in std_logic; --habilita avanzar el PC y capturar la instrucción
-    
-    -- Salida hacia DecExe 
-    ir : out std_logic_vector(31 downto 0); --registro de instrucción hacia DecExe
-    ir_valid : out std_logic --opcional, muy útil para saber cuándo el IR contiene algo válido
-   );
+    generic(
+        ADDR_WIDTH   : integer := 17
+    );
+    Port (
+        clk: in std_logic;
+        rst: in std_logic;
+        PC_out : out std_logic_vector(ADDR_WIDTH+1 downto 0)
+       );
 end component;
 
+component RISCV_DecExe
+    Port (
+    clk : in std_logic; -- clk y rst se mantienen para el Regfile
+    rst : in std_logic;
+    
+    IR : in std_logic_vector (31 downto 0);
+    -- Data interface (para conectar con puerto B de la memoria)
+    data_addr : out std_logic_vector(ADDR_WIDTH-1 downto 0);
+    data_wdata : out std_logic_vector(31 downto 0);
+    data_rdata : in  std_logic_vector(31 downto 0);
+    data_we : out std_logic;
+    data_be : out std_logic_vector(3 downto 0)
+         );
+end component;
 begin
 
 i_fetch:RISCV_Fetch
@@ -90,12 +93,20 @@ i_fetch:RISCV_Fetch
     port map(
       clk => clk,
       rst => rst,
-      instr_addr => instr_addr,
-      instr_rdata => instr_rdata,
-      fetch_en => fetch_en,
-      ir => ir,
-      ir_valid => ir_valid
+      PC_out => PC
     );
 
+instr_addr <= PC (ADDR_WIDTH+1 downto 2);--Descarta los dos LSB de PC para convertirlo en la direcciÃ³n de memoria de instrcciones
 
+i_decexe : RISCV_DecExe
+port map(
+      clk => clk,
+      rst => rst,
+      IR => instr_rdata,
+      data_addr => data_addr, 
+      data_wdata => data_wdata,
+      data_rdata => data_wdata,
+      data_we => data_we,
+      data_be => data_be
+    );
 end Behavioral;

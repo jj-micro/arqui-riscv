@@ -33,29 +33,21 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity RISCV_Fetch is
 generic(
-    ADDR_WIDTH   : integer := 17
+    ADDR_WIDTH : integer := 17
   );
   Port (
     clk: in std_logic;
     rst: in std_logic;
     
     -- Interfaz a memoria de instrucciones (puerto A)
-    instr_addr  : out std_logic_vector(ADDR_WIDTH-1 downto 0);--dirección a memoria = PC
-    instr_rdata : in  std_logic_vector(31 downto 0); --salida del puerto A de la memoria
-    
-    fetch_en : in std_logic; --habilita avanzar el PC y capturar la instrucción
-    
-    -- Salida hacia DecExe 
-    ir : out std_logic_vector(31 downto 0); --registro de instrucción hacia DecExe
-    ir_valid : out std_logic --opcional, muy útil para saber cuándo el IR contiene algo válido
+    PC_out : out std_logic_vector(ADDR_WIDTH + 1 downto 0)
    );
 end RISCV_Fetch;
 
 architecture Behavioral of RISCV_Fetch is
 
 signal pc_reg : std_logic_vector(31 downto 0);
-signal ir_reg : std_logic_vector(31 downto 0);
-signal valid_reg: std_logic;
+
 
 begin
 
@@ -65,29 +57,10 @@ begin
     if rst = '1' then
         pc_reg <= (others=>'0');
     elsif rising_edge(clk) then   
-        if fetch_en = '1' then
-            pc_reg <= std_logic_vector(unsigned(pc_reg) + 4);  -- PC += 4
-        end if;
+        pc_reg <= std_logic_vector(unsigned(pc_reg) + 4);  -- PC += 4
     end if;
 end process;
 
--- Registro de instrucción (IR) y válido
-process(clk,rst)
-begin
-    if rst = '1' then
-        ir_reg    <= (others => '0');
-        valid_reg <= '0';
-    elsif rising_edge(clk) then   
-        if fetch_en = '1' then
-            ir_reg <= instr_rdata; -- captura la instrucción devuelta este ciclo
-            valid_reg <= '1';
-        end if;
-    end if;
-end process;
 
-ir <= ir_reg;
-ir_valid <= valid_reg;
-
--- Dirección a memoria = PC 
-instr_addr <= pc_reg(ADDR_WIDTH-1 downto 0);
+PC_out <= std_logic_vector(resize(unsigned(pc_reg), 34));
 end Behavioral;
